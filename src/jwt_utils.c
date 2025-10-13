@@ -1,7 +1,7 @@
-#include <epan/packet.h>
-#include <epan/wslua/wslua.h>
-#include <lua/lauxlib.h>
-#include <lua/lua.h>
+// #include <epan/packet.h>
+// #include <epan/wslua/wslua.h>
+#include <lauxlib.h>
+#include <lua.h>
 
 #include "jwt_utils.h"
 #include "jwt_verify.h"
@@ -54,7 +54,16 @@ static const luaL_Reg jwt_utils_funcs[] = {
 };
 
 // Module initialization
-WS_DLL_PUBLIC_DEF int luaopen_jwt_utils(lua_State *L) {
+int luaopen_jwt_utils(lua_State *L) {
     luaL_newlib(L, jwt_utils_funcs);
     return 1;
 }
+
+#ifdef _WIN32
+#include <windows.h>
+
+BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
+{
+    return TRUE;
+}
+#endif

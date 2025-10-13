@@ -3,8 +3,8 @@
 #include <openssl/evp.h>
 #include <openssl/ec.h>
 #include <openssl/pem.h>
-#include <lua/lauxlib.h>
-#include <lua/lua.h>
+#include <lauxlib.h>
+#include <lua.h>
 #include <glib.h>
 
 Base64Type detect_base64_type(const gchar *str) {

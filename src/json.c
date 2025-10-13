@@ -1,6 +1,6 @@
-#include <epan/wslua/wslua.h>
-#include <lua/lauxlib.h>
-#include <lua/lua.h>
+// #include <epan/wslua/wslua.h>
+#include <lauxlib.h>
+#include <lua.h>
 #include "base64.h"
 #include "cJSON.h"
 #include "json.h"

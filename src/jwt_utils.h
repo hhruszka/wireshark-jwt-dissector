@@ -5,7 +5,7 @@
 #ifndef JWT_UTILS_H
 #define JWT_UTILS_H
 
-#include <lua/lua.h>
+#include <lua.h>
 
 // Plugin version
 #define JWT_UTILS_VERSION "1.0.0"

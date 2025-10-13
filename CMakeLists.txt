@@ -6,22 +6,25 @@
 #
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
-
 include(WiresharkPlugin)
 
 # Plugin name and version info (major minor micro extra)
 set_module_info(jwt 1 0 0 0)
 
-# Required packages
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(OPENSSL REQUIRED openssl)
-#pkg_check_modules(GLIB REQUIRED glib-2.0)
-pkg_check_modules(GLIB REQUIRED IMPORTED_TARGET glib-2.0)
-# Find Lua (use pkg-config or fallback if needed)
+#pkg_check_modules(GLIB REQUIRED IMPORTED_TARGET glib-2.0)
+find_package(GLIB2 REQUIRED)
 find_package(Lua REQUIRED)
-# Add these lines to find OpenSSL libraries, if not already present
 find_package(OpenSSL REQUIRED)
-#find_package(Glib REQUIRED)
+
+
+# Debug: Print what was found
+message(STATUS "***** OpenSSL include dir: ${OPENSSL_INCLUDE_DIR}")
+message(STATUS "***** OpenSSL libraries: ${OPENSSL_LIBRARIES}")
+message(STATUS "***** Lua include dir: ${LUA_INCLUDE_DIRS}")
+message(STATUS "***** Lua libraries: ${LUA_LIBRARIES}")
+message(STATUS "***** GLib includes: ${GLIB2_INCLUDE_DIRS}")
+message(STATUS "***** GLib libraries: ${GLIB2_LIBRARIES}")
 
 # Source files
 set(SOURCES
@@ -33,55 +36,36 @@ set(SOURCES
         src/rsa_verify.c
         src/ecdsa_verify.c
 )
-#
-set(PLUGIN_FILES
-        ${SOURCES}
-)
 
-# Lua script for installation
-set(LUA_SCRIPTS
-        lua/jwt_postdissector.lua
-)
-
-# Add the Wireshark plugin library
-# Use utility-specific naming here
-add_wireshark_plugin_library(jwt epan ${PLUGIN_FILES})
+#add_library(jwt MODULE ${SOURCES})
+add_library(jwt MODULE ${SOURCES})
 
 # Include directories
 target_include_directories(jwt PRIVATE
-#        ${GLIB_INCLUDE_DIRS}
-        ${OPENSSL_INCLUDE_DIRS}
-        ${LUA_INCLUDE_DIR}
+        ${LUA_INCLUDE_DIRS}
+        ${OPENSSL_INCLUDE_DIR}
+        ${GLIB2_INCLUDE_DIRS}
 )
-
-# Link Wireshark libraries and external dependencies
+#
+## Link Wireshark libraries and external dependencies
 target_link_libraries(jwt PRIVATE
-        epan                    # Wireshark's core library (adjust if necessary)
-#        ${GLIB_LIBRARIES}
-        PkgConfig::GLIB # Use the modern imported target
         ${OPENSSL_LIBRARIES}
         ${LUA_LIBRARIES}
+        ${GLIB2_LIBRARIES}
 )
 
-# Set output name (no lib prefix)
-set_target_properties(jwt PROPERTIES
-        PREFIX ""
-        OUTPUT_NAME "jwt"
-)
+if (WIN32)
+    # Set output name (no lib prefix)
+    set_target_properties(jwt PROPERTIES
+            PREFIX ""
+            OUTPUT_NAME "jwt"
+            SUFFIX ".dll"
+    )
+endif ()
 
+message(STATUS "Checking install path: [${WIRESHARK_PERSONAL_PLUGINS_DIR}]")
 # Install plugin library (adjust destination if needed)
+#install(TARGETS jwt
+#        LIBRARY DESTINATION ${WIRESHARK_PERSONAL_PLUGINS_DIR}
+#)
 install_plugin(jwt epan)
-
-# Install Lua scripts
-install(FILES ${LUA_SCRIPTS} DESTINATION share/wireshark/lua)
-
-# Optional: Check for coding standards compliance
-CHECKAPI(
-        NAME
-        jwt
-        SWITCHES
-        --group dissectors-prohibited
-        --group dissectors-restricted
-        SOURCES
-        ${SOURCES}
-)
