@@ -73,5 +73,5 @@ endif ()
 #)
 #install_plugin(jwt epan)
 install(TARGETS jwt
-        LIBRARY DESTINATION ${WIRESHARK_BASE_DIR}/jwt
+        LIBRARY DESTINATION C:/Users/hhruszka/Development/jwt
 )
