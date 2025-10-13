@@ -6,13 +6,16 @@
 #
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
+#cmake_minimum_required(VERSION 3.10)
+#project(jwt C)
+#find_package(Wireshark REQUIRED)
 include(WiresharkPlugin)
 
 # Plugin name and version info (major minor micro extra)
 set_module_info(jwt 1 0 0 0)
 
 find_package(PkgConfig REQUIRED)
-#pkg_check_modules(GLIB REQUIRED IMPORTED_TARGET glib-2.0)
+#pkg_check_modules(GLIB2 REQUIRED IMPORTED_TARGET glib-2.0)
 find_package(GLIB2 REQUIRED)
 find_package(Lua REQUIRED)
 find_package(OpenSSL REQUIRED)
@@ -63,9 +66,12 @@ if (WIN32)
     )
 endif ()
 
-message(STATUS "Checking install path: [${WIRESHARK_PERSONAL_PLUGINS_DIR}]")
+#message(STATUS "Checking install path: [${WIRESHARK_PERSONAL_PLUGINS_DIR}]")
 # Install plugin library (adjust destination if needed)
 #install(TARGETS jwt
 #        LIBRARY DESTINATION ${WIRESHARK_PERSONAL_PLUGINS_DIR}
 #)
-install_plugin(jwt epan)
+#install_plugin(jwt epan)
+install(TARGETS jwt
+        LIBRARY DESTINATION ${WIRESHARK_BASE_DIR}/jwt
+)
