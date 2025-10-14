@@ -6,11 +6,11 @@
 #define JWT_UTILS_H
 
 #include <lua.h>
-
+#include "jwt_export.h"
 // Plugin version
 #define JWT_UTILS_VERSION "1.0.0"
 
 // Initialize the plugin
-int luaopen_jwt_utils(lua_State *L);
+JWT_API int luaopen_jwt_utils(lua_State *L);
 
 #endif //JWT_UTILS_H

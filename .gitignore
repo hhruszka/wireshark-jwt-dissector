@@ -1,0 +1,5 @@
+/.clang-tidy
+/build/
+/targets/
+.idea
+cmake-build-debug-visual-studio
