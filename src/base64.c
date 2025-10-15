@@ -12,17 +12,23 @@ Base64Type detect_base64_type(const gchar *str) {
     gboolean has_slash = strchr(str, '/') != NULL;
     gboolean has_dash = strchr(str, '-') != NULL;
     gboolean has_underscore = strchr(str, '_') != NULL;
+    gboolean has_padding = strchr(str, '=') != NULL;
+
 
     if ((has_plus || has_slash) && (has_dash || has_underscore)) {
         return BASE64_UNKNOWN;  // Mixed - invalid
+    }
+
+    if (has_padding && (has_plus || has_slash)) {
+        return BASE64_STANDARD_WITH_PADDING;
     }
 
     if (has_plus || has_slash) {
         return BASE64_STANDARD;
     }
 
-    if (has_dash || has_underscore) {
-        return BASE64_URL;
+    if ((has_dash || has_underscore) && has_padding) {
+        return BASE64_URL_WITH_PADDING;
     }
 
     // No special characters - could be either

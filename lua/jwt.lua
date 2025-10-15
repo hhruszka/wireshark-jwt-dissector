@@ -1,6 +1,7 @@
 -- jwt.lua - Minimal JWT dissector that delegates everything to Go
 
-local log_file = io.open("C:\\Users\\hhruszka\\Desktop\\jwt_debug.log", "w")
+--local log_file = io.open("C:\\Users\\hhruszka\\Desktop\\jwt_debug.log", "w")
+local log_file = nil
 
 function log_debug(msg)
     if log_file then
@@ -73,14 +74,18 @@ local token_headers = {
     ["3gpp-sbi-source-nf-client-credentials"] = true,
 }
 
+local token_pattern = '(ey[A-Za-z0-9_-]+%.[A-Za-z0-9_-]+%.[A-Za-z0-9_+%/-]*)'
 
 local function get_token_from_header()
     local jwt_string = nil
     local jwt_source = nil
-    local header_values = { all_field_infos(http2_header_value) }
-    local header_names = { all_field_infos(http2_header_name) }
+    --local header_values = { all_field_infos(http2_header_value) }
+    --local header_names = { all_field_infos(http2_header_name) }
 
-    log_debug("Found " .. #header_names .. " header names " .. #header_values .. "header values")
+    local header_values = { http2_header_value() }
+    local header_names = { http2_header_name() }
+
+    log_debug("Found " .. #header_names .. " header names " .. #header_values .. " header values")
 
     if #header_names ~= #header_values then return end
 
@@ -128,14 +133,16 @@ local function get_token_from_body()
             log_debug("Body length: " .. #body_data)
 
             pattern_start, pattern_end, jwt_match = body_data:find(
-                '"access_token\"%s*:%s*\"(ey[A-Za-z0-9_-]+%.[A-Za-z0-9_-]+%.[A-Za-z0-9_+%/-]*)"')
+                '"access_token\"%s*:%s*\"' .. token_pattern)
+                --'"access_token\"%s*:%s*\"(ey[A-Za-z0-9_-]+%.[A-Za-z0-9_-]+%.[A-Za-z0-9_+%/-]*)"')
             if not jwt_string then
                 pattern_start, pattern_end, jwt_match = body_data:find(
-                    '"token\"%s*:%s*\"(ey[A-Za-z0-9_-]+%.[A-Za-z0-9_-]+%.[A-Za-z0-9_+%/-]*)"')
+                    '"token\"%s*:%s*\"' .. token_pattern)
+                    --'"token\"%s*:%s*\"(ey[A-Za-z0-9_-]+%.[A-Za-z0-9_-]+%.[A-Za-z0-9_+%/-]*)"')
             end
             if not jwt_string then
                 pattern_start, pattern_end, jwt_match = body_data:find(
-                    "(ey[A-Za-z0-9_-]+%.[A-Za-z0-9_-]+%.[A-Za-z0-9_+%/-]*)")
+                    token_pattern)
             end
 
             if jwt_match then

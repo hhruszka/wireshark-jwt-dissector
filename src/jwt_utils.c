@@ -27,13 +27,28 @@ static int l_base64url_decode(lua_State *L) {
     return 0;
 }
 
+// Lua: base64url_decode(string) -> string
+static int l_detect_base64_type(lua_State *L) {
+    const char *input = luaL_checkstring(L, 1);
+
+    if (input == NULL) {
+        lua_pushinteger(L,-1);
+        return 0;
+    }
+
+    const int detected = detect_base64_type(input);
+
+    lua_pushinteger(L,detected);
+    return 1;
+}
+
 // Lua: verify_jwt(token, public_key, algorithm) -> boolean
 static int l_verify_jwt(lua_State *L) {
     const char *token = luaL_checkstring(L, 1);
     const char *public_key = luaL_checkstring(L, 2);
     const char *alg = luaL_optstring(L, 3, "RS256");
 
-    int result = jwt_verify(token, public_key, alg);
+    const int result = jwt_verify(token, public_key, alg);
     lua_pushboolean(L, result);
     return 1;
 }
@@ -50,6 +65,7 @@ static const luaL_Reg jwt_utils_funcs[] = {
     {"verify_jwt", l_verify_jwt},
     {"json_unmarshall",l_json_decode},
     {"base64_json_unmarshall",l_json_decode_base64},
+    {"detect_base64_type",l_detect_base64_type},
     {"version", l_get_version},
     {NULL, NULL}
 };
