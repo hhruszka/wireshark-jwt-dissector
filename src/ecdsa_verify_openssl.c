@@ -1,10 +1,9 @@
-// src/ecdsa_verify.c
+1// src/ecdsa_verify.c
 #include "ecdsa_verify.h"
 #include "base64.h"
 #include <openssl/evp.h>
 #include <openssl/ec.h>
 #include <openssl/bn.h>
-#include <openssl/ecdsa.h>
 #include <openssl/bio.h>
 #include <openssl/pem.h>
 #include <glib.h>

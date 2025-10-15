@@ -15,8 +15,22 @@ set(WIRESHARK_LIBS_DIR "C:/Users/hhruszka/Development/wireshark/wireshark-x64-li
 # Important: Point to the vcpkg export directory where packages actually are
 set(VCPKG_ROOT "${WIRESHARK_LIBS_DIR}/vcpkg-export-2025.07.25-x64-windows-ws/installed/x64-windows")
 set(LUA_ROOT "${WIRESHARK_LIBS_DIR}/lua-5.4.6-unicode-win64-vc14")
+set(GNUTLS_ROOT "${WIRESHARK_LIBS_DIR}/gnutls-3.8.10-1-x64-mingw-dynamic-ws")
 
-find_package(OpenSSL REQUIRED)
+# Option to choose crypto library
+option(USE_GNUTLS "Use GnuTLS instead of OpenSSL" ON)
+
+if(USE_GNUTLS)
+#    find_package(GnuTLS REQUIRED)
+    message(STATUS "***** Using GnuTLS for cryptography")
+    set(GNUTLS_INCLUDE_DIR "${GNUTLS_ROOT}/include")
+    set(GNUTLS_LIBRARIES "${GNUTLS_ROOT}/lib/libgnutls-30.lib")
+else()
+    find_package(OpenSSL REQUIRED)
+    message(STATUS "***** Using OpenSSL for cryptography")
+endif()
+
+
 
 set(GLIB_INCLUDE_DIRS
         "${VCPKG_ROOT}/include/glib-2.0"
@@ -30,24 +44,43 @@ set(LUA_INCLUDE_DIRS
 set(LUA_LIBRARIES "${LUA_ROOT}/lua54.lib")
 
 # Debug: Print what was found
-message(STATUS "***** OpenSSL include dir: ${OPENSSL_INCLUDE_DIR}")
-message(STATUS "***** OpenSSL libraries: ${OPENSSL_LIBRARIES}")
+if(USE_GNUTLS)
+    message(STATUS "***** GnuTLS include dir: ${GNUTLS_INCLUDE_DIR}")
+    message(STATUS "***** GnuTLS libraries: ${GNUTLS_LIBRARIES}")
+else()
+    message(STATUS "***** OpenSSL include dir: ${OPENSSL_INCLUDE_DIR}")
+    message(STATUS "***** OpenSSL libraries: ${OPENSSL_LIBRARIES}")
+endif()
 message(STATUS "***** Lua include dir: ${LUA_INCLUDE_DIRS}")
 message(STATUS "***** Lua libraries: ${LUA_LIBRARIES}")
 message(STATUS "***** GLib includes: ${GLIB_INCLUDE_DIRS}")
 message(STATUS "***** GLib libraries: ${GLIB_LIBRARIES}")
 
-# Source files
-set(SOURCES
+# Common source files
+set(COMMON_SOURCES
         src/cJSON.c
         src/json.c
         src/jwt_utils.c
         src/jwt_verify.c
         src/base64.c
-        src/rsa_verify.c
-        src/ecdsa_verify.c
         src/jwt_export.h
 )
+
+# Crypto-specific source files
+if(USE_GNUTLS)
+    set(CRYPTO_SOURCES
+            src/rsa_verify_gnutls.c
+            src/ecdsa_verify_gnutls.c
+    )
+else()
+    set(CRYPTO_SOURCES
+            src/rsa_verify_openssl.c
+            src/ecdsa_verify_openssl.c
+    )
+endif()
+
+# Combine all sources
+set(SOURCES ${COMMON_SOURCES} ${CRYPTO_SOURCES})
 
 #add_library(jwt MODULE ${SOURCES})
 add_library(jwt SHARED ${SOURCES})
@@ -59,18 +92,34 @@ if(NOT WIN32)
 endif()
 
 # Include directories
-target_include_directories(jwt PRIVATE
-        ${LUA_INCLUDE_DIRS}
-        ${OPENSSL_INCLUDE_DIR}
-        ${GLIB_INCLUDE_DIRS}
-)
+if(USE_GNUTLS)
+    target_include_directories(jwt PRIVATE
+            ${LUA_INCLUDE_DIRS}
+            ${GNUTLS_INCLUDE_DIR}
+            ${GLIB_INCLUDE_DIRS}
+    )
+else()
+    target_include_directories(jwt PRIVATE
+            ${LUA_INCLUDE_DIRS}
+            ${OPENSSL_INCLUDE_DIR}
+            ${GLIB_INCLUDE_DIRS}
+    )
+endif()
 
 ## Link Wireshark libraries and external dependencies
-target_link_libraries(jwt PRIVATE
-        ${OPENSSL_LIBRARIES}
-        ${LUA_LIBRARIES}
-        ${GLIB_LIBRARIES}
-)
+if(USE_GNUTLS)
+    target_link_libraries(jwt PRIVATE
+            ${GNUTLS_LIBRARIES}
+            ${LUA_LIBRARIES}
+            ${GLIB_LIBRARIES}
+    )
+else()
+    target_link_libraries(jwt PRIVATE
+            ${OPENSSL_LIBRARIES}
+            ${LUA_LIBRARIES}
+            ${GLIB_LIBRARIES}
+    )
+endif()
 
 if (WIN32)
     # Set output name (no lib prefix)

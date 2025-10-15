@@ -1,8 +1,4 @@
 #include "base64.h"
-
-#include <openssl/evp.h>
-#include <openssl/ec.h>
-#include <openssl/pem.h>
 #include <lauxlib.h>
 #include <lua.h>
 #include <glib.h>

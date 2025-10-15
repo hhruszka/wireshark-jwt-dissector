@@ -2,7 +2,6 @@
 // Created by Henryk Hruszka on 10/10/2025.
 //
 #include <openssl/evp.h>
-#include <openssl/ec.h>
 #include <openssl/pem.h>
 #include <openssl/bio.h>
 #include <glib.h>
