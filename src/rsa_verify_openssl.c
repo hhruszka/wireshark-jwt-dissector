@@ -5,7 +5,7 @@
 #include <openssl/pem.h>
 #include <openssl/bio.h>
 #include <glib.h>
-#include "base64.h"
+#include <jwt/base64.h>
 
 int rsa_verify_rs256(gchar *header_payload,
                         const char *signature_b64,

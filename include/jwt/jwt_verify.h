@@ -5,6 +5,8 @@
 #ifndef JWT_VERIFY_H
 #define JWT_VERIFY_H
 
+#include <jwt/jwt_export.h>
+
 typedef enum {
     JWT_ALG_RS256,
     JWT_ALG_ES256,
@@ -14,7 +16,7 @@ typedef enum {
 } jwt_algorithm_t;
 
 // Main verification function
-int jwt_verify(const char *token, const char *public_key_pem, const char *alg_name);
+JWT_API int jwt_verify(const char *token, const char *public_key_pem, const char *alg_name);
 
 // Parse algorithm string
 jwt_algorithm_t jwt_parse_algorithm(const char *alg_name);

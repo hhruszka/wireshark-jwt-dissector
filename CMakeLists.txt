@@ -81,7 +81,6 @@ set(COMMON_SOURCES
         src/jwt_utils.c
         src/jwt_verify.c
         src/base64.c
-        src/jwt_export.h
 )
 
 # Crypto-specific source files
@@ -98,10 +97,20 @@ else ()
 endif ()
 
 # Combine all sources
-set(SOURCES ${COMMON_SOURCES} ${CRYPTO_SOURCES})
+set(SOURCES ${COMMON_SOURCES} ${CRYPTO_SOURCES}
+        src/jwt_alg.c)
 
 #add_library(jwt MODULE ${SOURCES})
 add_library(jwt SHARED ${SOURCES})
+# PUBLIC: for external projects that link against mylib
+# PRIVATE: for mylib's own .c files
+target_include_directories(jwt
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
 if (WIN32)
     target_compile_definitions(jwt PRIVATE BUILDING_JWT_DLL)
 endif ()
@@ -110,7 +119,7 @@ if (NOT WIN32)
     target_compile_options(jwt PRIVATE -fvisibility=hidden)
 endif ()
 
-# Include directories
+
 if (USE_GNUTLS)
     target_include_directories(jwt PRIVATE
             ${LUA_INCLUDE_DIRS}

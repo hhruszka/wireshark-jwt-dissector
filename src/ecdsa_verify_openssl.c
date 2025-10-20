@@ -1,6 +1,6 @@
 1// src/ecdsa_verify.c
-#include "ecdsa_verify.h"
-#include "base64.h"
+#include <jwt/ecdsa_verify.h>
+#include <jwt/base64.h?
 #include <openssl/evp.h>
 #include <openssl/ec.h>
 #include <openssl/bn.h>

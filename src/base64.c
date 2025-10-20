@@ -1,4 +1,4 @@
-#include "base64.h"
+#include <jwt/base64.h>
 #include <lauxlib.h>
 #include <lua.h>
 #include <glib.h>

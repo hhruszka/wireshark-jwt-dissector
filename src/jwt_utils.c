@@ -3,11 +3,11 @@
 #include <lauxlib.h>
 #include <lua.h>
 
-#include "jwt_utils.h"
-#include "jwt_verify.h"
-#include "base64.h"
-#include "json.h"
-#include "jwt_export.h"
+#include <jwt/jwt_utils.h>
+#include <jwt/jwt_verify.h>
+#include <jwt/base64.h>
+#include <jwt/json.h>
+#include <jwt/jwt_export.h>
 
 // Lua: base64url_decode(string) -> string
 static int l_base64url_decode(lua_State *L) {

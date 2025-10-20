@@ -16,8 +16,8 @@
 #include <gnutls/gnutls.h>
 #include <gnutls/abstract.h>
 #include <glib.h>
-#include "base64.h"
-#include "rsa_verify.h"
+#include <jwt/base64.h>
+#include <jwt/rsa_verify.h>
 
 int rsa_verify_rs256(gchar *header_payload,
                         const char *signature_b64,

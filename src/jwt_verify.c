@@ -1,10 +1,11 @@
 //
 // Created by Henryk Hruszka on 10/10/2025.
 //
-#include "jwt_verify.h"
-#include "rsa_verify.h"
-#include "ecdsa_verify.h"
+#include <jwt/jwt_verify.h>
+#include <jwt/rsa_verify.h>
+#include <jwt/ecdsa_verify.h>
 #include <glib.h>
+#include <jwt/jwt_export.h>
 
 jwt_algorithm_t jwt_parse_algorithm(const char *alg_name) {
     if (g_strcmp0(alg_name, "RS256") == 0) return JWT_ALG_RS256;
@@ -14,7 +15,7 @@ jwt_algorithm_t jwt_parse_algorithm(const char *alg_name) {
     return JWT_ALG_UNKNOWN;
 }
 
-int jwt_verify(const char *token, const char *public_key_pem, const char *alg_name) {
+JWT_API int jwt_verify(const char *token, const char *public_key_pem, const char *alg_name) {
     // Split token
     gchar **parts = g_strsplit(token, ".", 3);
     if (g_strv_length(parts) != 3) {

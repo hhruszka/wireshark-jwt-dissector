@@ -11,8 +11,8 @@
     #endif
 #endif
 
-#include "ecdsa_verify.h"
-#include "base64.h"
+#include <jwt/ecdsa_verify.h>
+#include <jwt/base64.h>
 #include <gnutls/gnutls.h>
 #include <gnutls/abstract.h>
 

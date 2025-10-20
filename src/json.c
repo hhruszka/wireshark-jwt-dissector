@@ -1,9 +1,9 @@
 // #include <epan/wslua/wslua.h>
 #include <lauxlib.h>
 #include <lua.h>
-#include "base64.h"
-#include "cJSON.h"
-#include "json.h"
+#include <jwt/base64.h>
+#include <jwt/cJSON.h>
+#include <jwt/json.h>
 
 void l_cjson_to_lua(lua_State *L, cJSON *json) {
     if (json == NULL) {
@@ -69,7 +69,6 @@ int l_json_decode(lua_State *L) {
 
 int l_json_decode_base64(lua_State *L) {
     const char *base64_string = luaL_checkstring(L, 1);
-
 
     gsize out_len;
     guchar *json_str = base64url_decode(base64_string, &out_len);
