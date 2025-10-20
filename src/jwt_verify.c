@@ -7,11 +7,14 @@
 #include <glib.h>
 
 jwt_algorithm_t jwt_parse_algorithm(const char *alg_name) {
-    if (g_strcmp0(alg_name, "RS256") == 0) return JWT_ALG_RS256;
-    if (g_strcmp0(alg_name, "ES256") == 0) return JWT_ALG_ES256;
-    if (g_strcmp0(alg_name, "ES384") == 0) return JWT_ALG_ES384;
-    if (g_strcmp0(alg_name, "ES512") == 0) return JWT_ALG_ES512;
-    return JWT_ALG_UNKNOWN;
+    jwt_algorithm_t algorithm = JWT_ALG_UNKNOWN;
+    GString * alg_name_upper = g_string_ascii_up(g_string_new(alg_name));
+    if (g_strcmp0(alg_name_upper, "RS256") == 0) algorithm = JWT_ALG_RS256;
+    if (g_strcmp0(alg_name_upper, "ES256") == 0) algorithm = JWT_ALG_ES256;
+    if (g_strcmp0(alg_name_upper, "ES384") == 0) algorithm = JWT_ALG_ES384;
+    if (g_strcmp0(alg_name_upper, "ES512") == 0) algorithm = JWT_ALG_ES512;
+    g_string_free(alg_name_upper, TRUE);
+    return algorithm;
 }
 
 int jwt_verify(const char *token, const char *public_key_pem, const char *alg_name) {
