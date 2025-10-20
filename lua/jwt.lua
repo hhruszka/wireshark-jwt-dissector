@@ -1,4 +1,4 @@
--- jwt.lua - Minimal JWT dissector that delegates everything to Go
+-- jwt.lua - JWT dissector
 
 --local log_file = io.open("C:\\Users\\hhruszka\\Desktop\\jwt_debug.log", "w")
 local log_file = nil
@@ -13,11 +13,19 @@ end
 -- Get the directory of the current Lua script
 local function get_script_dir()
     local str = debug.getinfo(2, "S").source:sub(2)
-    return str:match("(.*\\)")
+    local script_path = str:match("(.*[/\\])")
+    if script_path then
+        return script_path
+    end
+    local path_sep = package.config:sub(1,1)
+    return "." .. path_sep
 end
 
 local script_dir = get_script_dir()
-local so_path = script_dir .. "jwt.dll"
+--local so_path = script_dir .. "jwt.dll"
+print("Plugin is located in:")
+print(script_dir)
+local so_path = script_dir .. "jwt.dylib"
 
 print("Loading jwt_utils from: " .. so_path)
 
