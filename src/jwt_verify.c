@@ -6,19 +6,22 @@
 #include <jwt/ecdsa_verify.h>
 #include <glib.h>
 #include <jwt/jwt_export.h>
+#include <jwt/cJSON.h>
+#include <jwt/jwt_alg.h>
 
 jwt_algorithm_t jwt_parse_algorithm(const char *alg_name) {
     jwt_algorithm_t algorithm = JWT_ALG_UNKNOWN;
     GString * alg_name_upper = g_string_ascii_up(g_string_new(alg_name));
-    if (g_strcmp0(alg_name_upper, "RS256") == 0) algorithm = JWT_ALG_RS256;
-    if (g_strcmp0(alg_name_upper, "ES256") == 0) algorithm = JWT_ALG_ES256;
-    if (g_strcmp0(alg_name_upper, "ES384") == 0) algorithm = JWT_ALG_ES384;
-    if (g_strcmp0(alg_name_upper, "ES512") == 0) algorithm = JWT_ALG_ES512;
+    if (g_strcmp0(alg_name_upper->str, "RS256") == 0) algorithm = JWT_ALG_RS256;
+    if (g_strcmp0(alg_name_upper->str, "ES256") == 0) algorithm = JWT_ALG_ES256;
+    if (g_strcmp0(alg_name_upper->str, "ES384") == 0) algorithm = JWT_ALG_ES384;
+    if (g_strcmp0(alg_name_upper->str, "ES512") == 0) algorithm = JWT_ALG_ES512;
     g_string_free(alg_name_upper, TRUE);
     return algorithm;
 }
 
-JWT_API int jwt_verify(const char *token, const char *public_key_pem, const char *alg_name) {
+
+JWT_API int jwt_verify(const char *token, const char *public_key_pem) {
     // Split token
     gchar **parts = g_strsplit(token, ".", 3);
     if (g_strv_length(parts) != 3) {
@@ -26,9 +29,15 @@ JWT_API int jwt_verify(const char *token, const char *public_key_pem, const char
         return 0;
     }
 
+    char *alg_name = get_jwt_algorithm_name_from_header(parts[0]);
+    if (alg_name == NULL) {
+        g_strfreev(parts);
+        return 0;
+    }
     // Build header.payload
     gchar *header_payload = g_strdup_printf("%s.%s", parts[0], parts[1]);
     jwt_algorithm_t alg = jwt_parse_algorithm(alg_name);
+    free(alg_name);
 
     int verified = 0;
     switch (alg) {

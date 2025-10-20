@@ -4,6 +4,7 @@
 #ifndef BASE64_H
 #define BASE64_H
 #include <glib.h>
+#include <jwt/jwt_export.h>
 
 typedef enum {
     BASE64_STANDARD,
@@ -13,7 +14,7 @@ typedef enum {
     BASE64_UNKNOWN
 } Base64Type;
 
-guchar* base64url_decode(const char *input, gsize *out_len);
+JWT_API guchar* base64url_decode(const char *input, gsize *out_len);
 Base64Type detect_base64_type(const gchar *str);
 
 #endif //BASE64_H

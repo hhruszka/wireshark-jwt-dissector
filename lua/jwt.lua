@@ -262,7 +262,7 @@ local function analyze_jwt(pinfo, buffer, tree, jwt_source, jwt_string, jwt_tvbr
     if jwt_proto.prefs.public_key_file then
         public_key = get_pubkey(jwt_proto.prefs.public_key_file)
         if public_key then
-            signature_verification = jwt_utils.verify_jwt(jwt_source, public_key, jwt_header_table.alg)
+            signature_verification = jwt_utils.verify_jwt(jwt_source, public_key)
         end
     end
 

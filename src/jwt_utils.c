@@ -46,9 +46,9 @@ static int l_detect_base64_type(lua_State *L) {
 static int l_verify_jwt(lua_State *L) {
     const char *token = luaL_checkstring(L, 1);
     const char *public_key = luaL_checkstring(L, 2);
-    const char *alg = luaL_optstring(L, 3, "RS256");
+    // const char *alg = luaL_optstring(L, 3, "RS256");
 
-    const int result = jwt_verify(token, public_key, alg);
+    const int result = jwt_verify(token, public_key);
     lua_pushboolean(L, result);
     return 1;
 }

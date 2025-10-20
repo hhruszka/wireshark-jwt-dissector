@@ -16,7 +16,7 @@ typedef enum {
 } jwt_algorithm_t;
 
 // Main verification function
-JWT_API int jwt_verify(const char *token, const char *public_key_pem, const char *alg_name);
+JWT_API int jwt_verify(const char *token, const char *public_key_pem);
 
 // Parse algorithm string
 jwt_algorithm_t jwt_parse_algorithm(const char *alg_name);

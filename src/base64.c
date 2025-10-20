@@ -33,7 +33,7 @@ Base64Type detect_base64_type(const gchar *str) {
 }
 
 // Helper: Base64url decode (JWT uses base64url, not standard base64)
-guchar* base64url_decode(const char *input, gsize *out_len) {
+JWT_API guchar* base64url_decode(const char *input, gsize *out_len) {
     // Replace - with + and _ with /
     gchar *modified = g_strdup(input);
     for (int i = 0; modified[i]; i++) {
