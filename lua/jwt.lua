@@ -22,10 +22,10 @@ local function get_script_dir()
 end
 
 local script_dir = get_script_dir()
---local so_path = script_dir .. "jwt.dll"
+local so_path = script_dir .. "jwt.dll"
 print("Plugin is located in:")
 print(script_dir)
-local so_path = script_dir .. "jwt.dylib"
+--local so_path = script_dir .. "jwt.dylib"
 
 print("Loading jwt_utils from: " .. so_path)
 
@@ -87,8 +87,7 @@ local token_pattern = '(ey[A-Za-z0-9_-]+%.[A-Za-z0-9_-]+%.[A-Za-z0-9_+%/-]*)'
 local function get_token_from_header()
     local jwt_string = nil
     local jwt_source = nil
-    --local header_values = { all_field_infos(http2_header_value) }
-    --local header_names = { all_field_infos(http2_header_name) }
+    local jwt_tvbrange = nil
 
     local header_values = { http2_header_value() }
     local header_names = { http2_header_name() }
@@ -99,26 +98,43 @@ local function get_token_from_header()
 
     for i, name_finfo in ipairs(header_names) do
         local key = tostring(name_finfo.value)
+
         log_debug("Header[" .. i .. "]: " .. key)
 
-        if token_headers[key] then
-            local value_fi = header_values[i]
-            local token = value_fi.value
+        if token_headers[string.lower(key)] then
+            local value_finfo = header_values[i]
+            local value_str   = tostring(value_finfo.value)
+            local value_tvb = value_finfo.range
 
+            local token = value_str
             -- Special handling for Authorization header
-            if key == "authorization" then
+            if string.lower(key) == "authorization" then
                 token = token:match("Bearer%s+(.*)") or token
             end
 
-            if #token > 0 then
-                jwt_source = "Authorization Header (HTTP/2)"
-                jwt_string = token
-                break
+            local jwt_match = token:match(token_pattern)
+
+            if jwt_match then
+                jwt_source = key .. " Header  (HTTP/2)"
+                jwt_string = jwt_match
+
+                -- Find exact position of the JWT token
+                local jwt_start = value_str:find(jwt_match, 1, true)
+                if jwt_start then
+                    local jwt_length = #jwt_string
+                    local jwt_offset = jwt_start - 1
+                    -- Create TVBRange (Lua strings are 1-indexed, TVB is 0-indexed)
+                    jwt_tvbrange = value_tvb:range(jwt_offset, jwt_length)
+
+                    --print("Found JWT in header '" .. key .. "' at offset: " .. jwt_offset .. " length: " .. jwt_length)
+                    log_debug("Found JWT in header '" .. key .. "' at offset: " .. jwt_offset .. " length: " .. jwt_length)
+                    break
+                end
             end
         end
     end
 
-    return jwt_string, jwt_source
+    return jwt_string, jwt_source,jwt_tvbrange
 end
 
 local function get_token_from_body()
@@ -143,12 +159,12 @@ local function get_token_from_body()
             pattern_start, pattern_end, jwt_match = body_data:find(
                 '"access_token\"%s*:%s*\"' .. token_pattern)
                 --'"access_token\"%s*:%s*\"(ey[A-Za-z0-9_-]+%.[A-Za-z0-9_-]+%.[A-Za-z0-9_+%/-]*)"')
-            if not jwt_string then
+            if not jwt_match then
                 pattern_start, pattern_end, jwt_match = body_data:find(
                     '"token\"%s*:%s*\"' .. token_pattern)
                     --'"token\"%s*:%s*\"(ey[A-Za-z0-9_-]+%.[A-Za-z0-9_-]+%.[A-Za-z0-9_+%/-]*)"')
             end
-            if not jwt_string then
+            if not jwt_match then
                 pattern_start, pattern_end, jwt_match = body_data:find(
                     token_pattern)
             end
@@ -270,7 +286,11 @@ local function analyze_jwt(pinfo, buffer, tree, jwt_source, jwt_string, jwt_tvbr
     log_debug("Subtree created: " .. tostring(subtree))
     ---- Add raw token
     subtree:add(buffer(), "JWT Source: " .. jwt_source):set_generated()
-    subtree:add(f_token, jwt_tvbrange, jwt_string):set_generated()
+    if jwt_tvbrange then
+        subtree:add(f_token, jwt_tvbrange, jwt_string):set_generated()
+    else
+        subtree:add(f_token, buffer(), jwt_string):set_generated()
+    end
     valid_tree = subtree:add(f_valid, signature_verification == 1):set_generated()
     if public_key == nil then
         valid_tree:add_expert_info(PI_PROTOCOL, PI_WARN, "⚠️ Missing public key for signature verification")
@@ -332,14 +352,14 @@ function jwt_proto.dissector(buffer, pinfo, tree)
     if http2_field then
         log_debug("===> Processing HTTP2 packet")
 
-        jwt_string, jwt_source = get_token_from_header()
+        jwt_string, jwt_source,jwt_tvbrange = get_token_from_header()
 
         if not jwt_string then
             jwt_string, jwt_source, jwt_tvbrange = get_token_from_body()
         end
     end
 
-    if not jwt_string then
+    if not jwt_string or #jwt_string == 0 then
         log_debug("No JWT found")
         return
     end
@@ -350,6 +370,7 @@ function jwt_proto.dissector(buffer, pinfo, tree)
     log_debug("Creating subtree...")
 
     pinfo.cols.protocol:append(" (JWT)")
+
 
     analyze_jwt(pinfo, buffer, tree, jwt_source, jwt_string, jwt_tvbrange)
 end
